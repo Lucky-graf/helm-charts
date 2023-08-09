@@ -146,10 +146,25 @@ data:
     function cleanEsToken() {
       // Chaining requests
       console.log('Cleaning token');
-      return requestPromise(esUrl, esTokenDeleteOptions).then(() => {
+      return requestPromise(esUrl, esTokenDeleteOptions)
+      .then(() => {
         // Create the k8s secret
         console.log('Delete K8S secret');
-        return requestPromise(k8sDeleteSecretUrl, secretDeleteOptions)
+        return requestPromise(k8sDeleteSecretUrl, secretDeleteOptions,  {extraStatusCode: 404})
+          .then(() => {
+            console.log('K8S secret deleted');
+          })
+          .catch(error => {
+            console.error('Error in deleteEsToken:', error);
+            process.exit(1);
+          });
+      })
+      .then(() => {
+        console.log('Cleaned EsToken');
+      })
+      .catch(error => {
+        console.error('Error in cleanEsToken:', error);
+        process.exit(1);
       });
     }
 
